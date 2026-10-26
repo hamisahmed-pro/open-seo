@@ -14,6 +14,15 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 
+# FORK PATCH (2026-10-26, $0 free infrastructure): build at IMAGE-build
+# time, not container start. The container-start build needs ~4GB heap
+# (see .npmrc) but free containers get 512MB, so every free deploy OOM'd
+# at startup. Baking dist/ + the entrypoint's fingerprint file into the
+# image makes the entrypoint skip its build (same env: AUTH_MODE only is
+# fingerprinted, and it matches at runtime) and go straight to serving.
+ENV AUTH_MODE=local_noauth
+RUN pnpm run build && env | grep -E '^(VITE_|AUTH_MODE|BYPASS_EMAIL_VERIFICATION|POSTHOG_PUBLIC_KEY|POSTHOG_HOST|TURNSTILE_SITE_KEY|POSTHOG_SOURCEMAPS)' | sort | sha256sum | cut -d' ' -f1 > dist/.openseo-build-env
+
 EXPOSE 3001
 
 # Readiness probe against the unauthenticated setup/health endpoint. The long
