@@ -1,0 +1,21 @@
+# Render Blueprint for OpenSEO (fork: hamisahmed-pro/open-seo).
+# Free tier only, $0: Docker deploy, no DataForSEO key (data features warn
+# and stay off), local_noauth mode (see docs/SELF_HOSTING_DOCKER.md).
+# NOTE: this file documents the service; the live service was created from
+# the Render dashboard. A Blueprint create from this file reproduces it.
+services:
+  - type: web
+    name: openseo
+    runtime: docker
+    plan: free
+    region: frankfurt
+    branch: main
+    autoDeploy: true
+    dockerfilePath: deploy/docker/Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    envVars:
+      - key: AUTH_MODE
+        value: local_noauth
+      - key: OPENSEO_TELEMETRY_DISABLED
+        value: "1"
