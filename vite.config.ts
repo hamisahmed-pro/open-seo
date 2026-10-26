@@ -60,10 +60,16 @@ export default defineConfig(({ mode, command }) => {
     ],
     server: {
       allowedHosts,
+      // FORK PATCH (2026-10-26): bind all interfaces, not loopback —
+      // container hosts (Render) can only reach 0.0.0.0:$PORT. The
+      // scheduler also passes --host 0.0.0.0; this makes the config
+      // agree so no layer silently falls back to localhost.
+      host: "0.0.0.0",
       port,
     },
     preview: {
       allowedHosts,
+      host: "0.0.0.0",
       port,
     },
     build: {
