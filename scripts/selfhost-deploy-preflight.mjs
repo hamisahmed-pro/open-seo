@@ -2,6 +2,7 @@
 // missing env value or Cloudflare login should fail in seconds instead.
 // (Distinct from scripts/selfhost-preflight.ts, the Docker container-start
 // preflight that validates the runtime environment.)
+// FORK PATCH (hamisahmed-pro/open-seo, 2026-10-26): DATAFORSEO_API_KEY is OPTIONAL here — $0 free infrastructure, no paid APIs.
 // Everything here is best-effort duplication of errors alchemy would raise
 // later anyway; when in doubt (unreadable profile, API-token auth) it stays
 // quiet and lets the deploy be the judge.
@@ -35,7 +36,7 @@ if (!existsSync(envFile)) {
     "",
     `  ${cmd("cp deploy/.env.selfhost.example .env.selfhost")}`,
     "",
-    `then set ${em("DATAFORSEO_API_KEY")} and ${em("ACCESS_ALLOWED_EMAILS")}.`,
+    `then set ${em("ACCESS_ALLOWED_EMAILS")} (DATAFORSEO_API_KEY is optional — without it, data features stay off).`,
   );
 }
 const env = {};
@@ -44,8 +45,11 @@ for (const line of readFileSync(envFile, "utf8").split("\n")) {
   if (match) env[match[1]] = match[2].replace(/^(["'])(.*)\1$/, "$2");
 }
 if (!env.DATAFORSEO_API_KEY) {
-  fail(
-    `${em("DATAFORSEO_API_KEY")} is not set in ${envFile} — see docs/DATAFORSEO_API_KEY.md for how to get one.`,
+  // FORK PATCH (2026-10-26, $0 free infrastructure): DataForSEO is OPTIONAL
+  // in this fork. Without a key, DataForSEO-backed features (keyword research,
+  // rank tracking, backlink data) warn and stay off; the app and deploy run on.
+  console.warn(
+    `\n${chalk.yellow("warning:")} ${em("DATAFORSEO_API_KEY")} is not set in ${envFile} — DataForSEO-backed features stay off. The app and deploy continue without them.`,
   );
 }
 // When both are set, the deploy provisions no Access resources (hand-managed
